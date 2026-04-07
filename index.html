@@ -328,10 +328,11 @@
 
   <div class="waitlist-form" id="waitlist">
     <input type="email" placeholder="Enter your email" id="email-input" />
-    <a id="join-btn" href="https://docs.google.com/forms/d/e/1FAIpQLSfohveXNYxIvFfbuQs7NuaDbcoEpnMb-iO1bHvFLuhfyE1FUw/viewform?usp=dialog" target="_blank" class="btn-primary">
+    <button id="join-btn" class="btn-primary">
       Join waitlist <span class="btn-arrow">→</span>
-    </a>
+    </button>
   </div>
+  <p id="waitlist-msg" style="display:none;margin-top:0.75rem;font-size:0.9rem;"></p>
 
   <p class="social-proof">Be part of the first 1,000 people to experience it — free.</p>
 </section>
@@ -375,14 +376,37 @@
 <script>
   const btn = document.getElementById('join-btn');
   const input = document.getElementById('email-input');
-  const baseUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSfohveXNYxIvFfbuQs7NuaDbcoEpnMb-iO1bHvFLuhfyE1FUw/viewform?usp=dialog';
+  const msg = document.getElementById('waitlist-msg');
+  const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSfohveXNYxIvFfbuQs7NuaDbcoEpnMb-iO1bHvFLuhfyE1FUw/formResponse';
 
-  btn.addEventListener('click', function(e) {
+  btn.addEventListener('click', async function() {
     const email = input.value.trim();
-    if (email && email.includes('@')) {
-      this.href = baseUrl + '&entry.1129620430=' + encodeURIComponent(email);
-    } else {
-      this.href = baseUrl;
+    if (!email || !email.includes('@')) {
+      msg.textContent = 'Please enter a valid email address.';
+      msg.style.color = '#e55';
+      msg.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+
+    const body = new FormData();
+    body.append('entry.1129620430', email);
+
+    try {
+      await fetch(formUrl, { method: 'POST', mode: 'no-cors', body });
+      msg.textContent = "You're on the list! We'll be in touch soon.";
+      msg.style.color = '#4caf50';
+      msg.style.display = 'block';
+      input.value = '';
+      btn.textContent = 'Joined!';
+    } catch {
+      msg.textContent = 'Something went wrong. Please try again.';
+      msg.style.color = '#e55';
+      msg.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = 'Join waitlist <span class="btn-arrow">→</span>';
     }
   });
 
